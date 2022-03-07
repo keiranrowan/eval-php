@@ -14,14 +14,22 @@ $controller = new AppController();
 $app->get('/', function (Request $request, Response $response, array $args) use($controller) {
     return $response->write('Hello world. Try a different route.');
 });
-$app->get('/search/author/{title}', function (Request $request, Response $response, array $args) use($controller) {
-    $res = $controller->find($args['title']);
+
+$app->get('/search/author/[{author_name}]', function (Request $request, Response $response, array $args) use($controller) {
+    $res = $controller->find($args['author_name']);
     return $response->withJson($res);
 });
+
 $app->post('/create', function (Request $request, Response $response, array $args) use($controller) {
-    $res = $controller->create($request->getParsedBody());
-    return $response->withJson($res);
+    ['error' => $error, 'data' => $data] = $controller->create($request->getParsedBody());
+
+    if (!empty($error)) {
+        return $response->withJson(['error' => $error], 400);        
+    }
+    
+    return $response->withJson($data);
 });
+
 $app->post('/reset', function (Request $request, Response $response, array $args) use($controller) {
     $controller->reset();
     return $response->withJson(true);
